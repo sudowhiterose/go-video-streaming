@@ -1,15 +1,21 @@
-# Go Video Streamer
+# 🎬 Go Video Streamer
+
+[![Go Version](https://shields.io)](https://golang.org)
+[![License](https://shields.io)](LICENSE)
+[![Release](https://shields.io)](https://github.com)
 
 A minimalist service for video streaming with built-in rewind support (Range Requests). The backend is powered by Go, metadata is managed in a Docker-hosted PostgreSQL database, and video files are streamed directly from local storage.
 
-## Features
+---
+
+## 🚀 Features
 * **Range Requests:** Full HTTP 206 Partial Content support. You can fast-forward or rewind to any point instantly without downloading the entire video file first.
 * **Dockerized Database:** Spin up a clean PostgreSQL instance via Docker Compose without cluttering your host machine.
 * **Native Go Implementation:** The server leverages Go's built-in `net/http` package paired with the high-performance `pgx` driver.
 
 ---
 
-## Project Structure
+## 📂 Project Structure
 
 ```text
 ├── main.go               # Main Go server application logic
@@ -26,13 +32,13 @@ A minimalist service for video streaming with built-in rewind support (Range Req
 
 ---
 
-## Prerequisites
-* **Go** (version 1.20 or higher)
+## 🛠️ Prerequisites
+* **Go** (version 1.22 or higher)
 * **Docker** & **Docker Compose** installed on your system
 
 ---
 
-## Quick Start Guide
+## ⏱️ Quick Start Guide
 
 ### 1. Start the Database
 Spin up the PostgreSQL container in detached mode:
@@ -73,3 +79,9 @@ go run main.go
 Once running, navigate to the web player in your browser: [http://localhost:8080](http://localhost:8080)
 
 ---
+
+## ⚙️ How It Works
+1. The web client hits the root URL `/` and pulls down the static `index.html` canvas.
+2. The HTML5 `<video>` tag triggers a GET request targeting `/stream?id=1`.
+3. The Go backend queries PostgreSQL to fetch the corresponding server-side asset pointer (`./storage/videos/video1.mp4`).
+4. The file engine intercepts standard browser `Range` headers via `http.ServeFile` and streams chunks of video dynamically.
