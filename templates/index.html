@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Видео</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <center><h1>Video</h1></center>
+
+        <center><div class="player-wrapper">
+            <video id="videoPlayer" controls preload="metadata">
+                <!-- Здесь будет ссылка на видео с бэкенда -->
+                <source src="/api/videos/1/stream" type="video/mp4">
+                Ваш браузер не поддерживает видео.
+            </video>
+        </div></center>
+    </div>
+</body>
+</html>
