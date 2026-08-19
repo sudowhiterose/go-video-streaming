@@ -2,36 +2,55 @@ package main
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+//go:embed templates/* static/*
+var embeddedFiles embed.FS
 
 var db *pgxpool.Pool
 
 func main() {
 	var err error
-	connstr := "postgres://user:password@localhost:5433/videodb?sslmode=disable"
 
-	db, err = pgxpool.New(context.Background(), connstr)
+	connstr := os.Getenv("DATABASE_URL")
+	if connstr == "" {
+		connstr = "postgres://user:password@localhost:5433/videodb?sslmode=disable"
+	}
+
+	log.Println("Connecting to database...")
+	for i := 0; i < 15; i++ {
+		db, err = pgxpool.New(context.Background(), connstr)
+		if err == nil {
+			err = db.Ping(context.Background())
+			if err == nil {
+				break
+			}
+		}
+		log.Printf("Database not ready (attempt %d/15), waiting 2 seconds...\n", i+1)
+		time.Sleep(2 * time.Second)
+	}
+
 	if err != nil {
-		log.Fatalf("error connecting to db: %v\n", err)
+		log.Fatalf("Critical error: failed to connect to db: %v\n", err)
 	}
 	defer db.Close()
-
-	err = db.Ping(context.Background())
-	if err != nil {
-		log.Fatalf("db not answering: %v\n", err)
-	}
-	fmt.Println("is working!")
+	fmt.Println("Database connection established!")
 
 	http.HandleFunc("/", handleIndex)
 	http.HandleFunc("/stream", handleStream)
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
-	fmt.Println("server on :8080...")
+
+	staticFS := http.FS(embeddedFiles)
+	http.Handle("/static/", http.FileServer(staticFS))
+
+	fmt.Println("Server on :8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
@@ -40,7 +59,16 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	http.ServeFile(w, r, "./templates/index.html")
+
+	data, err := embeddedFiles.ReadFile("templates/index.html")
+	if err != nil {
+		http.Error(w, "Internal Server Error: template missing", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	w.Write(data)
 }
 
 func handleStream(w http.ResponseWriter, r *http.Request) {
