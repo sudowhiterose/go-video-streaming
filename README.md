@@ -10,6 +10,7 @@ A minimalist service for video streaming. The backend is powered by Go, metadata
 
 ## ⏱️ Quick Start Guide
 ```
+download latest release 
 7z x go-video-streamer-linux.zip //or tar -xvf go-video-streamer-linux.zip
 mkdir storage //pull this your videos
 chmod +x run.sh
