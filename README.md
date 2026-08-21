@@ -18,3 +18,6 @@ sudo ./run.sh
 go to http://localhost:8080
 
 ```
+
+## Used libs
+- pgx
